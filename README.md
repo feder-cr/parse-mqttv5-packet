@@ -30,7 +30,7 @@ const parsedData = parse(packet);
 console.log(parsedData);
 ```
 ## How parser work
-The parse-mqttv5-packet library provides specific parsers for different MQTTv5 packet types:
+The parse-mqttv5-packet library provides specific parsers for different MQTTv5 packet types and is capable of autonomously determining the type of MQTT message received, allowing it to be processed by the correct specific parser:
 
 ### parseConnAck: Parses Connection Acknowledgment packets.
 #### Packet Structure:
