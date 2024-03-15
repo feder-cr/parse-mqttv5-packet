@@ -24,7 +24,7 @@ Here's a basic example of how to use parse-mqttv5-packet to parse a Connect pack
 ```
 const { parse } = require('parse-mqttv5-packet');
 
-const packet = Buffer.from([/* packet data here */]);
+const packet = Buffer.from([/* MQTT packet */]);
 const parsedData = parse(packet);
 
 console.log(parsedData);
