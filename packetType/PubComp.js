@@ -1,4 +1,6 @@
-class PubComp
+const Packet = require('./Packet');
+
+class PubComp extends Packet
 {
     static parse(packet)
     {

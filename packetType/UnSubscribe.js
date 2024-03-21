@@ -1,4 +1,6 @@
-class UnSubscribe
+const Packet = require('./Packet');
+
+class UnSubscribe extends Packet
 {
     static parse(packet)
     {

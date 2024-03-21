@@ -4,7 +4,6 @@ function decodeVariableByteInteger(buffer, startIndex)
     let value = 0;
     let bytesRead = 0;
     let digit;
-
     do
     {
         digit = buffer[startIndex + bytesRead];
@@ -16,7 +15,6 @@ function decodeVariableByteInteger(buffer, startIndex)
             throw new Error('Malformed Remaining Length');
         }
     } while ((digit & 128) !== 0);
-
     return { value, bytesRead };
 }
 

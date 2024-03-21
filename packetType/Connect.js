@@ -1,3 +1,5 @@
+/* eslint-disable no-mixed-operators */
+/* eslint-disable no-bitwise */
 const { decodeVariableByteInteger } = require('./util');
 
 class Connect

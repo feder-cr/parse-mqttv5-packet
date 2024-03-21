@@ -1,8 +1,10 @@
+const Packet = require('./Packet');
 const { decodeVariableByteInteger } = require('./util');
 
-class SubAck
+class SubAck extends Packet
 {
-    static parse(packet) {
+    static parse(packet)
+    {
         const myPacket = { ...packet };
         let index = 0;
 
@@ -15,19 +17,24 @@ class SubAck
         index += bytesRead;
 
         // Properties
-        if (propertiesLength > 0) {
-            if (index + propertiesLength > myPacket.buffer.length) {
+        if (propertiesLength > 0)
+        {
+            if (index + propertiesLength > myPacket.buffer.length)
+            {
                 throw new Error('Il buffer non contiene dati sufficienti per le proprietà.');
             }
             myPacket.properties = UnSubAck.extractProperties(myPacket.buffer, index, index + propertiesLength);
             index += propertiesLength;
-        } else {
+        }
+        else
+        {
             myPacket.properties = {};
         }
 
         // UNSUBACK Payload (Reason Codes)
         myPacket.reasonCodes = [];
-        while (index < myPacket.buffer.length) {
+        while (index < myPacket.buffer.length)
+        {
             myPacket.reasonCodes.push(myPacket.buffer.readUInt8(index++));
         }
 

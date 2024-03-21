@@ -1,6 +1,8 @@
+const Packet = require('./Packet');
+
 const { decodeVariableByteInteger } = require('./util');
 
-class ConnAck
+class ConnAck extends Packet
 {
     static parse(packet)
     {

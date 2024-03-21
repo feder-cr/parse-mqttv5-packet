@@ -1,6 +1,7 @@
+const Packet = require('./Packet');
 const { decodeVariableByteInteger } = require('./util');
 
-class PubRel
+class PubRel extends Packet
 {
     static parse(packet)
     {

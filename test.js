@@ -1,6 +1,7 @@
-const mqttParser = require('.');
+const Parser = require('./Parser');
 
-const packets = mqttParser.parse(Buffer.from('YgIjKQ==', 'base64'));
+const parser = new Parser();
+const packets = parser.parse(Buffer.from('YgIjKQ==', 'base64'));
 packets.forEach((element) =>
 {
     console.log(element);
