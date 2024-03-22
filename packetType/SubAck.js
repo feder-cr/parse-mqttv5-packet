@@ -3,42 +3,40 @@ const { decodeVariableByteInteger } = require('./util');
 
 class SubAck extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = { ...packet };
+        super(packetType, flags, remainLength, slicedBuffer);
         let index = 0;
 
         // Packet Identifier
-        myPacket.packetId = myPacket.buffer.readUInt16BE(index);
+        this.packetId = this.buffer.readUInt16BE(index);
         index += 2;
 
         // Property Length
-        const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(myPacket.buffer, index);
+        const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(this.buffer, index);
         index += bytesRead;
 
         // Properties
         if (propertiesLength > 0)
         {
-            if (index + propertiesLength > myPacket.buffer.length)
+            if (index + propertiesLength > this.buffer.length)
             {
                 throw new Error('Il buffer non contiene dati sufficienti per le proprietà.');
             }
-            myPacket.properties = UnSubAck.extractProperties(myPacket.buffer, index, index + propertiesLength);
+            this.properties = UnSubAck.extractProperties(this.buffer, index, index + propertiesLength);
             index += propertiesLength;
         }
         else
         {
-            myPacket.properties = {};
+            this.properties = {};
         }
 
         // UNSUBACK Payload (Reason Codes)
-        myPacket.reasonCodes = [];
-        while (index < myPacket.buffer.length)
+        this.reasonCodes = [];
+        while (index < this.buffer.length)
         {
-            myPacket.reasonCodes.push(myPacket.buffer.readUInt8(index++));
+            this.reasonCodes.push(this.buffer.readUInt8(index++));
         }
-
-        return myPacket;
     }
 
     static extractProperties(buffer, startIndex, endIndex)

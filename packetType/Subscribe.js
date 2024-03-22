@@ -3,46 +3,44 @@ const { decodeVariableByteInteger } = require('./util');
 
 class Subscribe extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = { ...packet };
+        super(packetType, flags, remainLength, slicedBuffer);
         let index = 0;
 
         // Packet Identifier
-        myPacket.packetId = myPacket.buffer.readUInt16BE(index);
+        this.packetId = this.buffer.readUInt16BE(index);
         index += 2;
 
         // Proprietà
-        if (myPacket.buffer.length > index)
+        if (this.buffer.length > index)
         {
-            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(myPacket.buffer, index);
+            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(this.buffer, index);
             index += bytesRead;
 
             if (propertiesLength > 0)
             {
                 const propertiesEndIndex = index + propertiesLength;
-                myPacket.properties = Subscribe.extractProperties(myPacket.buffer, index, propertiesEndIndex);
+                this.properties = Subscribe.extractProperties(this.buffer, index, propertiesEndIndex);
                 index = propertiesEndIndex;
             }
             else
             {
-                myPacket.properties = {};
+                this.properties = {};
             }
         }
 
         // Topics e QoS
-        myPacket.topics = [];
-        while (index < myPacket.buffer.length)
+        this.topics = [];
+        while (index < this.buffer.length)
         {
-            const topicLength = myPacket.buffer.readUInt16BE(index);
+            const topicLength = this.buffer.readUInt16BE(index);
             index += 2;
-            const topic = myPacket.buffer.slice(index, index + topicLength).toString();
+            const topic = this.buffer.slice(index, index + topicLength).toString();
             index += topicLength;
-            const QoS = myPacket.buffer[index++];
-            myPacket.topics.push({ name: topic, QoS });
+            const QoS = this.buffer[index++];
+            this.topics.push({ name: topic, QoS });
         }
-
-        return myPacket;
     }
 
     static extractProperties(buffer, startIndex, endIndex)

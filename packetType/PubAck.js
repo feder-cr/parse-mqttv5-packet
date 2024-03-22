@@ -3,40 +3,38 @@ const { decodeVariableByteInteger } = require('./util');
 
 class PubAck extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = { ...packet };
+        super(packetType, flags, remainLength, slicedBuffer);
         let index = 0;
 
         // Packet Identifier
-        myPacket.packetId = myPacket.buffer.readUInt16BE(index);
+        this.packetId = this.buffer.readUInt16BE(index);
         index += 2;
 
         // PUBACK Reason Code (presente solo se la lunghezza del pacchetto è > 2)
-        if (myPacket.buffer.length > 2)
+        if (this.buffer.length > 2)
         {
-            myPacket.reasonCode = myPacket.buffer[index++];
+            this.reasonCode = this.buffer[index++];
         }
         else
         {
-            myPacket.reasonCode = 0x00; // 0x00 indica successo in assenza di reason code esplicito
+            this.reasonCode = 0x00; // 0x00 indica successo in assenza di reason code esplicito
         }
 
         // PUBACK Properties
-        if (myPacket.buffer.length > 3)
+        if (this.buffer.length > 3)
         {
-            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(myPacket.buffer, index);
+            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(this.buffer, index);
             index += bytesRead;
 
             if (propertiesLength > 0)
             {
                 const propertiesEndIndex = index + propertiesLength;
-                myPacket.properties = this.extractProperties(myPacket.buffer, index, propertiesEndIndex);
+                this.properties = this.extractProperties(this.buffer, index, propertiesEndIndex);
                 index = propertiesEndIndex;
             }
         }
-
-        return myPacket;
     }
 
     static extractProperties(buffer, startIndex, endIndex)

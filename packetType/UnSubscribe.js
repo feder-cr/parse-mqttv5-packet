@@ -2,22 +2,21 @@ const Packet = require('./Packet');
 
 class UnSubscribe extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = packet;
+        super(packetType, flags, remainLength, slicedBuffer);
         let index = 0;
-        myPacket.packetId = myPacket.buffer.readUInt16BE(index);
+        this.packetId = this.buffer.readUInt16BE(index);
         index += 2;
-        myPacket.topics = [];
+        this.topics = [];
         let topicLength;
-        while (index < myPacket.buffer.length)
+        while (index < this.buffer.length)
         {
-            topicLength = myPacket.buffer.readUInt16BE(index);
-            myPacket.topics.push(myPacket.buffer.slice(index + 2, index + 2 + topicLength)
+            topicLength = this.buffer.readUInt16BE(index);
+            this.topics.push(this.buffer.slice(index + 2, index + 2 + topicLength)
                 .toString());
             index += 2 + topicLength;
         }
-        return myPacket;
     }
 }
 

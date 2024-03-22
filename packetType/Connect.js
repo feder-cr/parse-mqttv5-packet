@@ -1,22 +1,24 @@
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-bitwise */
+const Packet = require('./Packet');
 const { decodeVariableByteInteger } = require('./util');
 
-class Connect
+class Connect extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = packet;
+        super(packetType, flags, remainLength, slicedBuffer);
+
         let index = 0;
 
         // Header
-        const protocolNameLength = myPacket.buffer.readUInt16BE(index);
-        myPacket.protocolName = myPacket.buffer.slice(index + 2, index + 2 + protocolNameLength).toString();
+        const protocolNameLength = this.buffer.readUInt16BE(index);
+        this.protocolName = this.buffer.slice(index + 2, index + 2 + protocolNameLength).toString();
         index += 2 + protocolNameLength;
 
-        myPacket.protocolLevel = myPacket.buffer[index++];
-        const b = myPacket.buffer[index++];
-        myPacket.connectFlags = {
+        this.protocolLevel = this.buffer[index++];
+        const b = this.buffer[index++];
+        this.connectFlags = {
             username: b >> 7 & 0x01,
             password: b >> 6 & 0x01,
             willRetain: b >> 5 & 0x01,
@@ -26,67 +28,65 @@ class Connect
             reserved: b & 0x01,
         };
 
-        if (myPacket.connectFlags.reserved) throw new Error('Connect flags reserved should be 0');
+        if (this.connectFlags.reserved) throw new Error('Connect flags reserved should be 0');
 
-        myPacket.keepAlive = myPacket.buffer.readUInt16BE(index);
+        this.keepAlive = this.buffer.readUInt16BE(index);
         index += 2;
 
         // Proprietà (MQTT 5.0)
-        if (myPacket.protocolLevel === 5)
+        if (this.protocolLevel === 5)
         {
-            const propertiesLength = decodeVariableByteInteger(myPacket.buffer, index);
+            const propertiesLength = decodeVariableByteInteger(this.buffer, index);
             index += propertiesLength.bytesRead;
             const propertiesEndIndex = index + propertiesLength.value;
-            myPacket.properties = Connect.extractProperties(myPacket.buffer, index, propertiesEndIndex);
+            this.properties = Connect.extractProperties(this.buffer, index, propertiesEndIndex);
             index = propertiesEndIndex;
         }
         // Client ID
-        const clientIdLength = myPacket.buffer.readUInt16BE(index);
+        const clientIdLength = this.buffer.readUInt16BE(index);
         index += 2;
-        myPacket.clientId = myPacket.buffer.slice(index, index + clientIdLength).toString();
+        this.clientId = this.buffer.slice(index, index + clientIdLength).toString();
         index += clientIdLength;
 
         // Proprietà Will, se Will Flag è impostato
-        if (myPacket.connectFlags.willFlag)
+        if (this.connectFlags.willFlag)
         {
-            const willPropertiesLength = decodeVariableByteInteger(myPacket.buffer, index);
+            const willPropertiesLength = decodeVariableByteInteger(this.buffer, index);
             index += willPropertiesLength.bytesRead;
             const willPropertiesEndIndex = index + willPropertiesLength.value;
-            myPacket.willProperties = this.extractWillProperties(myPacket.buffer, index, willPropertiesEndIndex);
+            this.willProperties = this.extractWillProperties(this.buffer, index, willPropertiesEndIndex);
             index = willPropertiesEndIndex;
 
             // Will Topic
-            const willTopicLength = myPacket.buffer.readUInt16BE(index);
+            const willTopicLength = this.buffer.readUInt16BE(index);
             index += 2;
-            myPacket.willTopic = myPacket.buffer.slice(index, index + willTopicLength).toString();
+            this.willTopic = this.buffer.slice(index, index + willTopicLength).toString();
             index += willTopicLength;
 
             // Will Payload
-            const willPayloadLength = myPacket.buffer.readUInt16BE(index);
+            const willPayloadLength = this.buffer.readUInt16BE(index);
             index += 2;
-            myPacket.willPayload = myPacket.buffer.slice(index, index + willPayloadLength);
+            this.willPayload = this.buffer.slice(index, index + willPayloadLength);
             index += willPayloadLength;
         }
 
         // User Name, se Username Flag è impostato
-        if (myPacket.connectFlags.username)
+        if (this.connectFlags.username)
         {
-            const userNameLength = myPacket.buffer.readUInt16BE(index);
+            const userNameLength = this.buffer.readUInt16BE(index);
             index += 2;
-            myPacket.username = myPacket.buffer.slice(index, index + userNameLength).toString();
+            this.username = this.buffer.slice(index, index + userNameLength).toString();
             index += userNameLength;
         }
 
         // Password, se Password Flag è impostato
-        if (myPacket.connectFlags.password)
+        if (this.connectFlags.password)
         {
-            const passwordLength = myPacket.buffer.readUInt16BE(index);
+            const passwordLength = this.buffer.readUInt16BE(index);
             index += 2;
-            myPacket.password = myPacket.buffer.slice(index, index + passwordLength).toString();
+            this.password = this.buffer.slice(index, index + passwordLength).toString();
             index += passwordLength;
         }
-
-        return myPacket;
     }
 
     static extractProperties(buffer, startIndex, endIndex)

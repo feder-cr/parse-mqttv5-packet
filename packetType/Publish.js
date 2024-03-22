@@ -1,48 +1,46 @@
 const Packet = require('./Packet');
-
 const { decodeVariableByteInteger } = require('./util');
 
 class Publish extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = { ...packet };
+        super(packetType, flags, remainLength, slicedBuffer);
+
         let index = 0;
 
         // Estrai il topic name (lunghezza + contenuto)
-        const topicLength = (myPacket.buffer[index++] << 8) | myPacket.buffer[index++];
-        myPacket.topic = myPacket.buffer.slice(index, index + topicLength).toString('utf8');
+        const topicLength = (this.buffer[index++] << 8) | this.buffer[index++];
+        this.topic = this.buffer.slice(index, index + topicLength).toString('utf8');
         index += topicLength;
 
         // Packet Identifier è presente solo se QoS > 0
-        if ((myPacket.flags >> 1) & 3)
+        if ((this.flags >> 1) & 3)
         { // Controllo i bit di QoS
-            myPacket.packetIdentifier = (myPacket.buffer[index++] << 8) | myPacket.buffer[index++];
+            this.packetIdentifier = (this.buffer[index++] << 8) | this.buffer[index++];
         }
 
         // Estrai la lunghezza delle proprietà (numero intero variabile a lunghezza variabile)
-        const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(myPacket.buffer, index);
+        const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(this.buffer, index);
         index += bytesRead;
 
         // Estrai le proprietà solo se la lunghezza è maggiore di zero
         if (propertiesLength > 0)
         {
             const propertiesEndIndex = index + propertiesLength;
-            myPacket.properties = Publish.extractProperties(myPacket.buffer, index, propertiesEndIndex);
+            this.properties = Publish.extractProperties(this.buffer, index, propertiesEndIndex);
             index = propertiesEndIndex;
         }
         else
         {
-            myPacket.properties = {};
+            this.properties = {};
         }
 
         // Il payload è ciò che resta dopo l'header variabile e le proprietà
-        myPacket.payload = myPacket.buffer.slice(index).toString();
+        this.payload = this.buffer.slice(index).toString();
 
         // Elimina il buffer dal pacchetto per pulire
-        delete myPacket.buffer;
-
-        return myPacket;
+        delete this.buffer;
     }
 
     static extractProperties(buffer, startIndex, endIndex)

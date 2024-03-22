@@ -2,11 +2,10 @@ const Packet = require('./Packet');
 
 class PubComp extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = packet;
-        myPacket.packetId = myPacket.buffer.readUInt16BE(0);
-        return myPacket;
+        super(packetType, flags, remainLength, slicedBuffer);
+        this.packetId = this.buffer.readUInt16BE(0);
     }
 }
 

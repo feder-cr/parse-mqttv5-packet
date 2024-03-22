@@ -3,38 +3,36 @@ const { decodeVariableByteInteger } = require('./util');
 
 class UnSubAck extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = { ...packet };
+        super(packetType, flags, remainLength, slicedBuffer);
         let index = 2; // Inizia dopo l'identificatore del pacchetto (2 byte)
 
         // Packet Identifier
-        myPacket.packetId = myPacket.buffer.readUInt16BE(0);
+        this.packetId = this.buffer.readUInt16BE(0);
 
         // Proprietà MQTT v5
-        if (myPacket.buffer.length > index)
+        if (this.buffer.length > index)
         {
-            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(myPacket.buffer, index);
+            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(this.buffer, index);
             index += bytesRead;
 
             if (propertiesLength > 0)
             {
-                if (index + propertiesLength > myPacket.buffer.length)
+                if (index + propertiesLength > this.buffer.length)
                 {
                     throw new Error('Il buffer non contiene dati sufficienti per le proprietà.');
                 }
 
                 // Estrai le proprietà qui...
-                myPacket.properties = UnSubAck.extractProperties(myPacket.buffer, index, index + propertiesLength);
+                this.properties = UnSubAck.extractProperties(this.buffer, index, index + propertiesLength);
                 index += propertiesLength;
             }
             else
             {
-                myPacket.properties = {};
+                this.properties = {};
             }
         }
-
-        return myPacket;
     }
 
     static extractProperties(buffer, startIndex, endIndex)

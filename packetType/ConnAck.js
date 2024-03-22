@@ -4,37 +4,35 @@ const { decodeVariableByteInteger } = require('./util');
 
 class ConnAck extends Packet
 {
-    static parse(packet)
+    constructor(packetType, flags, remainLength, slicedBuffer)
     {
-        const myPacket = { ...packet };
+        super(packetType, flags, remainLength, slicedBuffer);
         let index = 0;
 
-        myPacket.connackAcknowledgeFlags = myPacket.buffer[index++];
-        if (myPacket.connackAcknowledgeFlags > 1)
+        this.connackAcknowledgeFlags = this.buffer[index++];
+        if (this.connackAcknowledgeFlags > 1)
         {
             throw new Error('"Connect Acknowledge Flags" Bits 7-1 are reserved and MUST be set to 0.');
         }
 
-        myPacket.reasonCode = myPacket.buffer[index++];
+        this.reasonCode = this.buffer[index++];
 
-        if (index < myPacket.buffer.length)
+        if (index < this.buffer.length)
         {
-            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(myPacket.buffer, index);
+            const { value: propertiesLength, bytesRead } = decodeVariableByteInteger(this.buffer, index);
             index += bytesRead;
             if (propertiesLength > 0)
             {
                 const propertiesEndIndex = index + propertiesLength;
-                myPacket.properties = ConnAck.extractProperties(myPacket.buffer, index, propertiesEndIndex);
+                this.properties = ConnAck.extractProperties(this.buffer, index, propertiesEndIndex);
                 index = propertiesEndIndex;
             }
         }
 
-        if (myPacket.buffer.length > index)
+        if (this.buffer.length > index)
         {
             throw new Error('The CONNACK Packet should not have payload beyond the properties.');
         }
-
-        return myPacket;
     }
 
     static extractProperties(buffer, startIndex, endIndex)
