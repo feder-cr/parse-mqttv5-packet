@@ -1,5 +1,7 @@
 # parse-mqttv5-packet
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Federico%20Elia-0A66C2?logo=linkedin&logoColor=white)](https://it.linkedin.com/in/federico-elia-5199951b6)
+
 `parse-mqttv5-packet` is a JavaScript library designed for parsing MQTTv5 packets, offering a simple and efficient solution for working with the MQTT protocol in JavaScript applications.
 
 ## What is MQTT?
